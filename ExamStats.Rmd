@@ -1,0 +1,92 @@
+---
+title: "What is the Relationship Between My Study Habits and My Grades"
+author: "Michael Hekmat"
+date: "2023-11-19"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE)
+library(tidyverse)
+#Removing NAs
+Data = suppressWarnings(read.csv("data.csv")) %>% 
+  drop_na()
+```
+
+### Introduction
+
+I used data from Anki, an open source digital flashcard application, to see how my study habits relate to my actual grades for each exam. 
+
+  * **Daily_Ave** - Represents the number of daily average flashcards repetitions per set.
+   * **Studied **- The number of days spent studying for an exam.
+   * **Difficulty **- Perceived difficulty of the exam
+
+### Relationship between exam grade and daily average flashcards 
+```{r pressure, echo=FALSE}
+dailyave_grade <- lm(Grade ~ Daily_Ave, data = Data)
+summary(dailyave_grade)
+```
+
+### Relationship between grades and daily average flashcards, days studied, and difficulty
+```{r}
+#summary table
+summary(lm(Grade ~ Daily_Ave + Studied + Difficulty, data = Data))
+```
+
+
+```{r}
+#Correlation Plot
+ggplot(Data, aes(Data$Daily_Ave, Data$Grade)) + geom_point()+
+  geom_smooth(se = FALSE, method = "lm") +
+  ylab("Exam Grade (Percent)") +
+  xlab("Daily Average Flashcards")+
+  ggtitle("Correlation Between Daily Average Flashcards and Grade (%)")
+
+
+```
+
+
+### Correlation Between Number of Days Studied and Grade (%)
+```{r}
+#r correlation coefficient
+x = cor(Data$Studied, Data$Grade)
+cat("Our correlation coefficient is: ", x)
+```
+
+#### Plotting this correlation
+```{r}
+ggplot(Data, aes(Data$Studied, Data$Grade)) + geom_point()+
+  geom_smooth(se = FALSE, method = "lm") +
+  ylab("Exam Grade") +
+  xlab("Number of Days Studied")+
+  ggtitle("Correlation Between Number of Days Studied and Grade (%)") 
+```
+
+#### Separating the correlation plot by class
+```{r}
+ggplot(Data, aes(Data$Studied, Data$Grade, color = Class)) +
+    geom_point()+
+  geom_smooth(se = FALSE, method = "lm") +
+  #facet_wrap(~Class)+ optional if you wanna see individual plots
+    ylab("Exam Grade") +
+  xlab("Number of Days Studied")+
+  ggtitle("Correlation Between Number of Days Studied and Grade (%) by Class")
+
+
+```
+
+**Need at least 30 points, preliminary analysis shows no correlation**
+
+```{r}
+ggplot(Data, aes(x = Studied)) + 
+  geom_histogram()
+
+```
+
+### Future Directions: 
+ * Look for interactions between days studied & exam grade and flashcard numbers.
+  * Correct for other covarients. Each class has different average scores/distribution of scores. Keep track of subject of class/department/level of class may give a better sense of what is actually predictive of percentage score.
+ *  You could compare quartiles/madgrade/ percentile to measure how well you did in classes
